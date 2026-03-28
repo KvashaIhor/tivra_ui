@@ -82,13 +82,12 @@ export default function HomePage() {
     const insforgeKeys: Array<keyof BuildCredentials> = [
       'insforgeBaseUrl',
       'insforgeAnonKey',
-      'insforgeAccessToken',
       'insforgeProjectId',
     ];
 
     const filledInsforge = insforgeKeys.filter((key) => !!creds[key]);
     if (filledInsforge.length > 0 && filledInsforge.length < insforgeKeys.length) {
-      return 'InsForge credentials are incomplete. Provide Base URL, Anon Key, Access Token, and Project ID.';
+      return 'InsForge credentials are incomplete. Provide Base URL, Anon Key, and Project ID.';
     }
 
     return null;
