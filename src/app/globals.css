@@ -1,0 +1,250 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+pre, code, kbd, samp, .font-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.1) 0%, transparent 70%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 100% 100%, 28px 28px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
+
+/* ========== FOCUS STATES - KEYBOARD NAVIGATION ========== */
+*:focus-visible {
+  @apply outline outline-1 outline-emerald-700/60 ring-0;
+}
+
+*:focus:not(:focus-visible) {
+  @apply outline-none;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-danger:focus-visible {
+  @apply ring-2 ring-offset-2 ring-emerald-500 outline-none;
+}
+
+.input-field:focus-visible {
+  @apply outline outline-1 outline-emerald-700/60 ring-0 border-transparent;
+}
+
+a:focus-visible {
+  @apply ring-2 ring-offset-1 ring-emerald-500 outline-none rounded-sm;
+}
+
+nav a:focus-visible {
+  @apply ring-2 ring-emerald-400 outline-none;
+}
+
+/* ========== GLASS MORPHISM EFFECTS ========== */
+.glass-xs {
+  @apply bg-white/10 backdrop-blur-[4px];
+}
+
+.glass-sm {
+  @apply bg-white/15 backdrop-blur-sm;
+}
+
+.glass-md {
+  @apply bg-white/20 backdrop-blur-md;
+}
+
+.glass-lg {
+  @apply bg-white/25 backdrop-blur-lg;
+}
+
+.glass-dark-xs {
+  @apply bg-black/10 backdrop-blur-[4px];
+}
+
+.glass-dark-sm {
+  @apply bg-black/15 backdrop-blur-sm;
+}
+
+.glass-dark-md {
+  @apply bg-black/20 backdrop-blur-md;
+}
+
+/* ========== BUTTON STYLES ========== */
+.btn-primary {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-glow hover:scale-105 active:scale-95;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 glass-sm text-white hover:bg-white/30;
+}
+
+.btn-danger {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-glow hover:scale-105 active:scale-95;
+}
+
+/* ========== CARD STYLES ========== */
+.card {
+  @apply glass-md border border-white/20 rounded-xl p-6 transition-all duration-300 hover:bg-white/30 hover:shadow-elevation-2 hover:-translate-y-1;
+}
+
+.card-glass {
+  @apply glass-lg border border-white/30 rounded-xl p-6 backdrop-blur-lg;
+}
+
+/* ========== BADGE STYLES ========== */
+.badge-base {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-all duration-200;
+}
+
+.badge-todo {
+  @apply badge-base bg-blue-500/20 text-blue-300;
+}
+
+.badge-inprogress {
+  @apply badge-base bg-amber-500/20 text-amber-300;
+}
+
+.badge-review {
+  @apply badge-base bg-teal-500/20 text-teal-300;
+}
+
+.badge-done {
+  @apply badge-base bg-emerald-500/20 text-emerald-300;
+}
+
+.badge-low {
+  @apply badge-base bg-gray-500/20 text-gray-300;
+}
+
+.badge-medium {
+  @apply badge-base bg-amber-500/20 text-amber-300;
+}
+
+.badge-high {
+  @apply badge-base bg-emerald-500/20 text-emerald-300;
+}
+
+/* ========== SKELETON LOADING ========== */
+.skeleton-base {
+  @apply animate-shimmer bg-gradient-to-r from-white/10 via-white/20 to-white/10 bg-[length:1200px_100%];
+}
+
+.skeleton-text {
+  @apply skeleton-base h-4 rounded w-3/4;
+}
+
+.skeleton-avatar {
+  @apply skeleton-base h-12 w-12 rounded-full;
+}
+
+.skeleton-card {
+  @apply skeleton-base h-24 rounded-lg;
+}
+
+/* ========== INTERACTIVE UTILITIES ========== */
+.hover-lift {
+  @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-elevation-3;
+}
+
+.hover-glow {
+  @apply transition-all duration-200 hover:shadow-glow;
+}
+
+.focus-ring {
+  @apply focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2;
+}
+
+/* ========== ACCESSIBILITY ========== */
+.skip-link {
+  @apply absolute -top-8 left-0 z-50 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-b-lg;
+}
+
+.skip-link:focus-visible {
+  @apply top-0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-in-right,
+  .animate-slide-in-up,
+  .animate-scale-in,
+  .animate-bounce-in,
+  .animate-pulse-fast,
+  .animate-shimmer,
+  .animate-glow-pulse {
+    animation: none;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ========== TRANSITIONS ========== */
+.transition-smooth {
+  @apply transition-all duration-300 ease-out;
+}
+
+.transition-fast {
+  @apply transition-all duration-150 ease-out;
+}
+
+.transition-slow {
+  @apply transition-all duration-500 ease-out;
+}
+
+@keyframes orb-float {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(120px, -160px) scale(1.1); }
+  50%  { transform: translate(240px, -60px) scale(0.95); }
+  75%  { transform: translate(80px, 140px) scale(1.08); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes orb-float-r {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(-140px, 100px) scale(1.06); }
+  50%  { transform: translate(-80px, -120px) scale(0.94); }
+  75%  { transform: translate(100px, -60px) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes orb-float-s {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-100px, -130px) scale(1.07); }
+  66%  { transform: translate(130px, 80px) scale(0.93); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes progress-shimmer {
+  0% {
+    transform: translateX(-140%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(220%);
+    opacity: 0;
+  }
+}
