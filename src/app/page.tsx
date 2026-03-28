@@ -27,6 +27,14 @@ function extractUrlFromMessage(message: string): string | null {
   return match ? match[0] : null;
 }
 
+function isCredentialConfigError(message: string | null): boolean {
+  if (!message) return false;
+  return (
+    message.includes('Missing required configuration')
+    || message.includes('InsForge credentials are incomplete')
+  );
+}
+
 export default function HomePage() {
   const [prompt, setPrompt] = useState('');
   const [credentials, setCredentials] = useState<BuildCredentials>({});
@@ -56,6 +64,9 @@ export default function HomePage() {
 
   function showToast(message: string): void {
     setToastMessage(message);
+    if (isCredentialConfigError(message)) {
+      setShowCredentials(true);
+    }
     if (toastTimeoutRef.current !== null) {
       window.clearTimeout(toastTimeoutRef.current);
     }
@@ -221,6 +232,7 @@ export default function HomePage() {
     ? Math.round((completedSteps.filter((s) => s !== 'error').length / STEPS.length) * 100)
     : 0;
   const hasActivity = isRunning || events.length > 0;
+  const shouldHighlightCredentials = isCredentialConfigError(toastMessage) || isCredentialConfigError(error);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
@@ -279,7 +291,11 @@ export default function HomePage() {
                 Tivra orchestrates infrastructure, code generation, and deployment in one execution pipeline.
               </p>
 
-              <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 mb-4">
+              <div className={`rounded-xl border bg-white/[0.02] p-3 mb-4 transition-all ${
+                shouldHighlightCredentials
+                  ? 'border-amber-500/60 shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_0_24px_rgba(245,158,11,0.18)]'
+                  : 'border-white/[0.08]'
+              }`}>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[11px] font-mono uppercase tracking-wide text-zinc-400">Provider Credentials</span>
                   <button
@@ -417,7 +433,11 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="flex-none rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
+          <div className={`flex-none rounded-xl border bg-white/[0.02] p-3 transition-all ${
+            shouldHighlightCredentials
+              ? 'border-amber-500/60 shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_0_24px_rgba(245,158,11,0.18)]'
+              : 'border-white/[0.08]'
+          }`}>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[11px] font-mono uppercase tracking-wide text-zinc-400">Provider Credentials</span>
               <button
