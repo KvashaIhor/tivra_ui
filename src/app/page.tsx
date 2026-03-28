@@ -9,7 +9,7 @@ import { AgentEvent, BuildCredentials, BuildRequestPayload, BuildState, STEPS } 
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
-const ORCHESTRATOR = process.env.NEXT_PUBLIC_ORCHESTRATOR_URL ?? 'http://localhost:3001';
+const ORCHESTRATOR = (process.env.NEXT_PUBLIC_ORCHESTRATOR_URL ?? 'http://localhost:3001').replace(/\/+$/, '');
 
 const EXAMPLE_PROMPTS = [
   { label: 'Task Board', full: 'Build a project management tool with teams, task boards, and file attachments' },
@@ -36,7 +36,9 @@ export default function HomePage() {
   const [liveDeployedUrl, setLiveDeployedUrl] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const esRef = useRef<EventSource | null>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
 
   function getCompletedSteps(): string[] {
     return Array.from(new Set(events.map((e) => e.step)));
@@ -52,18 +54,77 @@ export default function HomePage() {
     return Object.keys(cleaned).length > 0 ? cleaned : undefined;
   }
 
+  function showToast(message: string): void {
+    setToastMessage(message);
+    if (toastTimeoutRef.current !== null) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToastMessage(null);
+      toastTimeoutRef.current = null;
+    }, 5000);
+  }
+
+  function validateCredentialSet(creds?: BuildCredentials): string | null {
+    if (!creds) return null;
+
+    const insforgeKeys: Array<keyof BuildCredentials> = [
+      'insforgeBaseUrl',
+      'insforgeAnonKey',
+      'insforgeAccessToken',
+      'insforgeProjectId',
+    ];
+
+    const filledInsforge = insforgeKeys.filter((key) => !!creds[key]);
+    if (filledInsforge.length > 0 && filledInsforge.length < insforgeKeys.length) {
+      return 'InsForge credentials are incomplete. Provide Base URL, Anon Key, Access Token, and Project ID.';
+    }
+
+    return null;
+  }
+
+  async function preflightOrchestrator(): Promise<string | null> {
+    const creds = normalizedCredentials();
+    try {
+      const response = await fetch(`${ORCHESTRATOR}/api/preflight`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credentials: creds }),
+      });
+      if (!response.ok) {
+        try {
+          const err = await response.json();
+          return err.error ?? 'Orchestrator preflight failed.';
+        } catch {
+          return 'Orchestrator preflight failed.';
+        }
+      }
+      return null;
+    } catch {
+      return 'Cannot reach Tivra Orchestrator. Check NEXT_PUBLIC_ORCHESTRATOR_URL, CORS, or backend status.';
+    }
+  }
+
   async function startBuild() {
     if (!prompt.trim() || isRunning) return;
-    setIsRunning(true);
-    setError(null);
-    setEvents([]);
-    setState(null);
-    setLiveDeployedUrl(null);
+
+    const creds = normalizedCredentials();
+    const credentialError = validateCredentialSet(creds);
+    if (credentialError) {
+      showToast(credentialError);
+      return;
+    }
+
+    const preflightError = await preflightOrchestrator();
+    if (preflightError) {
+      showToast(preflightError);
+      return;
+    }
 
     try {
       const payload: BuildRequestPayload = {
         prompt,
-        credentials: normalizedCredentials(),
+        credentials: creds,
       };
 
       const res = await fetch(`${ORCHESTRATOR}/api/build`, {
@@ -73,14 +134,27 @@ export default function HomePage() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? 'Failed to start build');
+        let message = 'Failed to start build';
+        try {
+          const err = await res.json();
+          message = err.error ?? message;
+        } catch {
+          // Keep default message when non-JSON errors are returned.
+        }
+        throw new Error(message);
       }
 
       const { buildId: id } = (await res.json()) as { buildId: string };
+      setIsRunning(true);
+      setError(null);
+      setEvents([]);
+      setState(null);
+      setLiveDeployedUrl(null);
       subscribeToStream(id);
     } catch (err) {
-      setError(String((err as Error).message));
+      const message = String((err as Error).message);
+      setError(message);
+      showToast(message);
       setIsRunning(false);
     }
   }
@@ -134,7 +208,12 @@ export default function HomePage() {
     };
   }
 
-  useEffect(() => () => esRef.current?.close(), []);
+  useEffect(() => () => {
+    esRef.current?.close();
+    if (toastTimeoutRef.current !== null) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+  }, []);
 
   const completedSteps = getCompletedSteps();
   const deployedUrl = liveDeployedUrl ?? state?.deployedUrl ?? null;
@@ -160,6 +239,12 @@ export default function HomePage() {
       
       {/* Content */}
       <div className="h-screen flex flex-col overflow-hidden relative z-10">
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-50 max-w-md rounded-lg border border-amber-500/40 bg-amber-500/15 px-4 py-3 text-xs text-amber-100 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-sm animate-slide-in-up">
+          {toastMessage}
+        </div>
+      )}
+
       {/* Header */}
       <header className="flex-none flex items-center gap-3 px-6 h-14 border-b border-white/[0.06]">
         <Image src="/tivra_logo.png" alt="Tivra" width={72} height={20} className="object-contain" />
